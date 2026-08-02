@@ -109,6 +109,15 @@ at the root, the way `npm start` serves it.
 - Install still prints deprecation warnings from transitive dependencies.
   Reading them is part of the exercise — understanding *why* a package is
   deprecated beats silencing the message.
+- `npm audit` is not clean, and that is worth sitting with rather than
+  reflexively running `npm audit fix --force` (which here would "fix" things by
+  downgrading to Next 9). The `overrides` block in `package.json` pins a
+  patched `sharp`, an optional dependency of Next that this site never loads.
+  What remains is build-time only: `postcss`, which Next pins to an exact
+  version, and `meta-marked`, whose old `marked`/`js-yaml` cannot be bumped
+  without breaking the markdown rendering. Both only ever parse files committed
+  to this repository, never anything a visitor supplies. Severity is not risk
+  until you know whether the vulnerable path is reachable.
 
 ## Licence
 
