@@ -1,13 +1,18 @@
 import Link from 'next/link';
 import Subscribe from './Subscribe';
+import asset from '../lib/asset';
 
 const Header = () => (
   <header className="header">
     <div className="header__left">
-      <Link href="/">
-        <a aria-label="Syntax.FM">
-          <img className="header__logo" src="/static/logo.png" alt="Syntax" />
-        </a>
+      {/* next/link renders its own <a> since Next 13, so props that used to go
+          on a nested <a> now go on the Link itself. */}
+      <Link href="/" aria-label="Syntax.FM">
+        <img
+          className="header__logo"
+          src={asset('/static/logo.png')}
+          alt="Syntax"
+        />
       </Link>
     </div>
     <div className="header__right">

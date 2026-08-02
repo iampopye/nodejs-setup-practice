@@ -33,15 +33,16 @@ The goal is getting it running, not rewriting it.
 1. **Get it running locally** — clone, install, start the dev server, open it.
 2. **Read the errors.** Wrong Node version? The message says so. Practise
    reading failures instead of guessing.
-3. **Production build** — build it, run the built output, notice how that
+3. **Production build** — build it, serve the built output, notice how that
    differs from dev mode.
-4. **Deploy it** — any Node host. A URL you can send someone is the milestone.
+4. **Deploy it** — the included workflow ships it to GitHub Pages. A URL you
+   can send someone is the milestone.
 5. **Containerise it** — write the Dockerfile yourself. There isn't one here;
    that's the exercise.
 
 ## Requirements
 
-- Node.js 18.1.2 or higher
+- Node.js 20.9 or higher
 - npm
 
 ## Running it
@@ -52,17 +53,54 @@ npm run dev      # http://localhost:6969
 ```
 
 ```bash
-npm run build    # production build
-npm start        # serve the build
+npm run build    # static export, written to out/
+npm start        # serve out/ at http://localhost:6969
 ```
+
+`npm run build` produces a folder of plain HTML, CSS and JavaScript in `out/`
+(`output: 'export'` in `next.config.js`). There is no Node server at runtime,
+which is what makes free static hosting possible — and it is why this app has
+no `pages/api` routes: the episode markdown under `shows/` is read at **build**
+time by `lib/getShows.js` and baked into the pages.
+
+Note that `npm start` is not `next start` any more. A static export has nothing
+to start; `npm start` just serves the `out/` folder with a plain file server.
+
+## Deploying
+
+Pushing to `main` triggers `.github/workflows/deploy.yml`, which builds the
+static export and publishes it to GitHub Pages at
+<https://iampopye.github.io/nodejs-setup-practice/>.
+
+Two things make a project Pages site work, and both are worth understanding:
+
+- **`basePath`** — the site is served from `/nodejs-setup-practice/`, not the
+  domain root, so every absolute URL needs that prefix. The workflow sets
+  `NEXT_PUBLIC_BASE_PATH`, which `next.config.js` feeds to `basePath` and
+  `assetPrefix`. Next cannot see inside a stylesheet, so
+  `scripts/build-css.mjs` applies the same prefix to the `url()` references,
+  and `lib/asset.js` does it for hand-written `src` attributes.
+- **`.nojekyll`** — Pages runs files through Jekyll by default, which silently
+  drops anything starting with an underscore, including Next's `_next/` asset
+  directory. The empty `public/.nojekyll` file turns that off.
+
+Leave `NEXT_PUBLIC_BASE_PATH` unset when building locally so the export works
+at the root, the way `npm start` serves it.
 
 ## Notes for learners
 
 - `package-lock.json` is committed deliberately. Delete it, reinstall, and you
   get different dependency versions — a classic source of "works on my machine".
 - The dev port is `6969`, set in `package.json`, not the Next.js default.
-- This codebase predates current Next.js. Install warnings are expected, and
-  reading them is part of the exercise — understanding *why* a package is
+- The 16 Stylus files in `styles/` are the original authors' source. Next no
+  longer compiles `.styl` itself, so `scripts/build-css.mjs` turns them into
+  one CSS file first — that is what the `predev` and `prebuild` npm scripts
+  are for. npm runs a `preX` script automatically before `X`; nothing invokes
+  it by hand.
+- `styles/generated/` and `out/` are build output and are gitignored. If a
+  stylesheet change seems not to apply, check that the prebuild step ran.
+- Install still prints deprecation warnings from transitive dependencies.
+  Reading them is part of the exercise — understanding *why* a package is
   deprecated beats silencing the message.
 
 ## Licence

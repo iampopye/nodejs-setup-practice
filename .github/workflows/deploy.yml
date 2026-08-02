@@ -1,0 +1,99 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+      # Working branch for the Next 15 port. Builds here, but does not deploy.
+      - upgrade/next-15
+  workflow_dispatch:
+
+# Deny everything by default; each job opts into exactly what it needs.
+permissions: {}
+
+# A Pages site has one live version. Let an in-progress deploy finish rather
+# than cancelling it half-written.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  # GitHub Pages serves this project site from a subdirectory. next.config.js
+  # and scripts/build-css.mjs both read this.
+  NEXT_PUBLIC_BASE_PATH: /nodejs-setup-practice
+
+jobs:
+  build:
+    name: Build static export
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # Runs the `prebuild` script first, which compiles styles/*.styl to
+      # styles/generated/style.css, then exports the site to out/.
+      - name: Build
+        run: npm run build
+
+      # Files and directories beginning with an underscore — such as Next's
+      # _next/ asset directory — are dropped by GitHub Pages unless this file
+      # is present. It is committed in public/, but assert it survived.
+      - name: Ensure .nojekyll is present
+        run: test -f out/.nojekyll || touch out/.nojekyll
+
+      - name: Verify the export
+        run: |
+          set -euo pipefail
+          test -f out/index.html
+          test -f out/sickpicks/index.html
+          test -f out/show/latest/latest/index.html
+          # Assets must carry the basePath exactly once.
+          grep -q '"/nodejs-setup-practice/_next/' out/index.html
+          if grep -q 'nodejs-setup-practice/nodejs-setup-practice' out/index.html; then
+            echo "basePath was applied twice" >&2
+            exit 1
+          fi
+          echo "Exported $(find out -name '*.html' | wc -l) HTML files."
+
+      - name: Upload the Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: out
+
+  deploy:
+    name: Deploy to Pages
+    # Only the default branch publishes. Feature branches build for validation.
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # `enablement: true` turns Pages on and points it at Actions if that has
+      # not been done in the repository settings yet. It is a no-op afterwards.
+      - name: Configure Pages
+        uses: actions/configure-pages@v6
+        with:
+          enablement: true
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v5

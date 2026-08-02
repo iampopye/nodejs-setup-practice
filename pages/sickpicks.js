@@ -7,8 +7,10 @@ import { getAllShowSickPicks } from '../lib/getShows';
 export async function getStaticProps() {
   const sickPicks = await getAllShowSickPicks();
 
+  // No `revalidate` — incremental regeneration needs a running server, and
+  // `output: 'export'` produces plain files. The data comes from markdown in
+  // the repo, so a rebuild is the only way it can change anyway.
   return {
-    revalidate: 1,
     props: {
       sickPicks,
     },

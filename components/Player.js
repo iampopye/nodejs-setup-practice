@@ -39,13 +39,12 @@ export default class Player extends React.Component {
     };
   } // END Constructor
 
-  componentWillUpdate(nextProps, nextState) { //eslint-disable-line
-    this.audio.playbackRate = nextState.playbackRate;
-  }
-
   componentDidUpdate(prevProps, prevState) { //eslint-disable-line
     const { show } = this.props;
     const { currentTime, currentVolume, playbackRate } = this.state;
+    // This used to live in componentWillUpdate, a legacy lifecycle React no
+    // longer supports. Applying it after the update has the same net effect.
+    this.audio.playbackRate = playbackRate;
     if (show.number !== prevProps.show.number) {
       const lp = localStorage.getItem(`lastPlayed${show.number}`);
       if (lp) {

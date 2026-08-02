@@ -18,7 +18,7 @@ export default function Live() {
             </p>
             <p>
               Ask a potluck question, give us your sick pick, do a shameless
-              plug or have us ask you a Stump'd question!
+              plug or have us ask you a Stump&apos;d question!
             </p>
             <a
               href="https://riverside.fm/studio/syntax-live"

@@ -1,48 +1,29 @@
-const path = require('path');
-const glob = require('glob');
+/**
+ * GitHub Pages serves a project site from a subdirectory, so every URL the app
+ * emits needs the repo name in front of it. Set NEXT_PUBLIC_BASE_PATH in CI;
+ * leave it unset locally so `npm run dev` still works at the site root.
+ */
+const basePath = (process.env.NEXT_PUBLIC_BASE_PATH || '').replace(/\/$/, '');
 
+/** @type {import('next').NextConfig} */
 module.exports = {
-  rewrites() {
-    return [
-      {
-        source: '/',
-        destination: '/show/latest/latest',
-      },
-    ];
+  // Emit a plain folder of HTML/CSS/JS in `out/` — no Node server at runtime.
+  // This is what makes GitHub Pages hosting possible, and it is why there are
+  // no longer any routes under pages/api (see lib/getShows.js instead).
+  output: 'export',
+
+  basePath,
+  assetPrefix: basePath || undefined,
+
+  // A static export has no server, so there is nothing to optimise images on
+  // the fly. Required whenever output is 'export'.
+  images: {
+    unoptimized: true,
   },
-  webpack: (config) => {
-    config.module.rules.push(
-      {
-        test: /\.(css|styl)/,
-        loader: 'emit-file-loader',
-        options: {
-          name: 'dist/[path][name].[ext]',
-        },
-      },
-      {
-        test: /\.css$/,
-        use: ['babel-loader', 'raw-loader', 'postcss-loader'],
-      },
-      {
-        test: /\.styl$/,
-        use: [
-          // 'babel-loader',
-          'raw-loader',
-          'postcss-loader',
-          {
-            loader: 'stylus-loader',
-            options: {
-              stylusOptions: {
-                includePaths: ['styles', 'node_modules']
-                  .map((d) => path.join(__dirname, d))
-                  .map((g) => glob.sync(g))
-                  .reduce((a, c) => a.concat(c), []),
-              },
-            },
-          },
-        ],
-      }
-    );
-    return config;
-  },
+
+  // Write `sponsor/index.html` rather than `sponsor.html`, which is what static
+  // hosts like GitHub Pages expect when resolving a directory-style URL.
+  trailingSlash: true,
+
+  reactStrictMode: true,
 };

@@ -16,21 +16,19 @@ export default class Show extends React.Component {
         } ${currentShow === show.displayNumber ? 'show--active' : ''}
       `}
       >
+        {/* The old href/as pair is obsolete: since Next 13 you pass the real
+            URL and Link renders the <a> itself. */}
         <Link
           scroll={false}
-          href="/show/[number]/[slug]"
-          as={`/show/${show.displayNumber}/${slug(show.title)}`}
+          href={`/show/${show.displayNumber}/${slug(show.title)}`}
+          className="show__link"
         >
-          <a className="show__link">
-            <div className="show__container">
-              <p className="show__displayNumber">
-                Episode {show.displayNumber}
-              </p>
-              <span className="show__seperator"> | </span>
-              <p className="show__modifiedDate">{show.displayDate}</p>
-            </div>
-            <h3 className="show__title">{show.title}</h3>
-          </a>
+          <div className="show__container">
+            <p className="show__displayNumber">Episode {show.displayNumber}</p>
+            <span className="show__seperator"> | </span>
+            <p className="show__modifiedDate">{show.displayDate}</p>
+          </div>
+          <h3 className="show__title">{show.title}</h3>
         </Link>
 
         <div className="show__playcontrols">
