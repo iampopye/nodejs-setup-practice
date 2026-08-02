@@ -72,6 +72,13 @@ Pushing to `main` triggers `.github/workflows/deploy.yml`, which builds the
 static export and publishes it to GitHub Pages at
 <https://iampopye.github.io/nodejs-setup-practice/>.
 
+This needs one manual setting first, once per repository: **Settings → Pages →
+Build and deployment → Source: GitHub Actions**. A workflow cannot do this for
+itself — turning Pages on is an admin-level API call, and the automatic
+`GITHUB_TOKEN` deliberately never has admin rights. Until it is set, the build
+job passes and the deploy job fails with `Resource not accessible by
+integration`, which is a permissions error, not a broken build.
+
 Two things make a project Pages site work, and both are worth understanding:
 
 - **`basePath`** — the site is served from `/nodejs-setup-practice/`, not the

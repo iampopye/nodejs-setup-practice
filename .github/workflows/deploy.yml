@@ -87,12 +87,13 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      # `enablement: true` turns Pages on and points it at Actions if that has
-      # not been done in the repository settings yet. It is a no-op afterwards.
+      # One-time manual setup is required before this job can succeed:
+      # Settings -> Pages -> Build and deployment -> Source: GitHub Actions.
+      # This action can enable Pages itself via `enablement: true`, but that
+      # calls an admin-only API and GITHUB_TOKEN cannot be granted repo-admin
+      # rights, so it fails with "Resource not accessible by integration".
       - name: Configure Pages
         uses: actions/configure-pages@v6
-        with:
-          enablement: true
 
       - name: Deploy
         id: deployment
