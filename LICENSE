@@ -1,6 +1,12 @@
 MIT License
 
 Copyright (c) 2018 Wes Bos
+Copyright (c) 2026 Karan Garg (modifications)
+
+The original work is the Syntax.fm website by Wes Bos and Scott Tolinski.
+Modifications in this repository — dependency upgrades, tooling and
+containerisation — are by Karan Garg and are released under the same licence.
+Both copyright notices are retained as the MIT licence requires.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
